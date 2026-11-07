@@ -1,0 +1,173 @@
+# PartCAD package: Sketchfab models as parts, served by a repository plugin.
+#
+# Published as //pub/universe/sketchfab/models: this package is
+# //pub/universe/sketchfab, and its one external dependency 'models' is served by
+# the sketchfab_repo plugin. Nothing is listed - a model site's catalog is not
+# something to enumerate - so a part is asked for by name, and found with
+# 'pc search parts' (see the README).
+name: //pub/universe/sketchfab
+
+desc: |
+  Models on Sketchfab (https://sketchfab.com) as PartCAD parts, a part per file
+  of a model, by the model's uid: the glTF binary Sketchfab makes of every
+  downloadable model, and the designer's upload where it is an STL or an OBJ.
+  Nothing is listed: a part is asked for by name, and found with 'pc search
+  parts'. No geometry is vendored; every file is fetched from Sketchfab, with
+  the user's own Sketchfab account, when it is first built.
+url: https://sketchfab.com/
+
+# The first PartCAD whose repository plugins may search their own catalog
+# ('searchKinds') and resolve a parametrized name themselves ('instanceKinds'),
+# which is what lets a parameter choose another file of a model, and that has
+# 'pc login'.
+partcad: ">=0.9.3"
+
+# An upload to a model site says nothing about whether, or how, it is made to
+# be manufactured - and on Sketchfab it is most often made to be looked at. The
+# plugin says the same of 'models' in its metadata.
+manufacturable: false
+
+docs:
+  name: Sketchfab for PartCAD
+  usage: |
+    ```shell
+    pc search parts -P //pub/universe/sketchfab/models -k "nema 17 bracket"
+    pc login //pub/universe/sketchfab:sketchfab_repo
+    pc inspect //pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26
+    pc inspect "//pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26;format=stl"
+    ```
+
+dependencies:
+  models:
+    type: external
+    plugin: :sketchfab_repo
+    desc: Sketchfab models, a part per file.
+
+repositories:
+  sketchfab_repo:
+    type: basic
+    path: sketchfab_repo.py
+    desc: Serves Sketchfab models as parts, and searches Sketchfab.
+    # Every parameter here is a default for every Sketchfab part, and yours
+    # to change without touching this package, two ways:
+    #
+    # - in your own ~/.partcad/config.yaml, under 'parameters', by the
+    #   plugin's name - which is also where 'pc login' keeps the token:
+    #
+    #     parameters:
+    #       //pub/universe/sketchfab:sketchfab_repo:
+    #         formats: stl,obj
+    #
+    # - or in a package of your own, as an enrich of the plugin and a package
+    #   it serves, whose parts are then yours to name - '//sketchfab_uploads:<uid>'
+    #   in a package at the root (never with credentials: those are yours,
+    #   not a package's):
+    #
+    #     repositories:
+    #       uploads_repo:
+    #         type: enrich
+    #         source: //pub/universe/sketchfab:sketchfab_repo
+    #         with:
+    #           formats: stl,obj
+    #     dependencies:
+    #       sketchfab_uploads:
+    #         type: external
+    #         plugin: :uploads_repo
+    #
+    # A part's own parameters override these for that part. Every part takes
+    # 'file' ('glb', the glTF binary Sketchfab made of the model, or
+    # 'source.stl' or 'source.obj', the designer's upload read as that),
+    # 'format' (its best file of that format: glb, or stl or obj for the
+    # upload) and 'source' (as below) - in its name,
+    # 'd3af66e9f74040508937b1dc81964f26;format=stl', or in the 'with' of an
+    # enrich of the part:
+    #
+    #     parts:
+    #       bracket:
+    #         type: enrich
+    #         source: //pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26
+    #         with:
+    #           format: stl
+    parameters:
+      formats:
+        type: string
+        default: ""
+        desc: >-
+          The formats to take a model in, best first, separated by commas: of
+          the ones PartCAD reads, Sketchfab has glb (its glTF binary of every
+          downloadable model) and stl and obj (the designer's upload, where it
+          was one). A format left out is not taken - 'stl,obj' is the
+          designer's uploads only, and searches for models uploaded so -
+          unless a part asks for it by its own 'format' or 'file'. Empty is
+          all of them; the glTF binary is still chosen before an upload, which
+          Sketchfab's API is not documented to serve.
+      source:
+        type: string
+        default: auto
+        enum: [auto, original, preview]
+        desc: >-
+          Which of a model's files: 'original', what the designer uploaded,
+          where it is an STL or an OBJ; 'preview', the glTF binary Sketchfab
+          made of it, which every downloadable model has; or 'auto', the glTF
+          binary unless a part or 'formats' asks for the upload. Every one of
+          them takes a Sketchfab account to download.
+      max_faces:
+        type: string
+        default: ""
+        desc: >-
+          The most triangles a model 'pc search parts' names may have, as
+          Sketchfab counts them in its glTF binary: Sketchfab's search leaves
+          out the rest. Empty is no limit. A model made to be looked at is
+          often hundreds of thousands of triangles, and PartCAD makes a face
+          of each - about a minute per hundred thousand - so '100000' keeps a
+          search to what builds in a minute or so. A part asked for by name is
+          served whatever its size.
+      # Empty here, and meant to stay so: a credential is the user's own, and
+      # is set where only they see it.
+      token:
+        type: string
+        default: ""
+        desc: >-
+          The API token of your own Sketchfab account, which every download
+          takes (searching does not): https://sketchfab.com/settings/password
+          shows it, signed in. It is sent as 'Authorization: Token' to
+          api.sketchfab.com, and to nothing else. 'pc login
+          //pub/universe/sketchfab:sketchfab_repo' opens that page and takes
+          it, and keeps it in your ~/.partcad/config.yaml, under 'parameters'
+          as above; 'pc login --agent' says where to find it by hand, and
+          takes it back with '--set token=...'. The SKETCHFAB_TOKEN
+          environment variable gives it too, where the plugin's sandbox sees
+          the environment (a container does not). Never set it in a package.
+      oauth_token:
+        type: string
+        default: ""
+        desc: >-
+          Instead of 'token': the access token an OAuth application was
+          granted on your behalf, sent as 'Authorization: Bearer'. 'pc login'
+          gets it when 'client_id' and 'redirect_uri' name an application; it
+          lasts a month. SKETCHFAB_OAUTH_TOKEN gives it too. Never set it in a
+          package.
+      # The OAuth application 'pc login' signs in with. Not secrets - an
+      # implicit grant takes no client secret - and the same for every user,
+      # so they belong here, and are yours to override with an application of
+      # your own. Empty: Sketchfab registers an application only by being
+      # asked (https://sketchfab.com/developers/oauth), and PartCAD has none,
+      # so 'pc login' asks for the API token instead.
+      client_id:
+        type: string
+        default: ""
+        desc: >-
+          The client id of the Sketchfab OAuth application 'pc login' signs in
+          with, by an implicit grant, instead of asking for the API token:
+          empty, until there is one. Sketchfab registers an application when
+          asked through its help center, with a redirect URI, and an implicit
+          grant needs no client secret; set this and 'redirect_uri' in your
+          ~/.partcad/config.yaml as above to sign in through one of your own.
+      redirect_uri:
+        type: string
+        default: ""
+        desc: >-
+          The redirect URI registered with that OAuth application (Sketchfab
+          takes http://127.0.0.1:<port>/...). It is never loaded: the
+          extension reads the token off the address Sketchfab sends the
+          browser to.
