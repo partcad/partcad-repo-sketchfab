@@ -176,6 +176,9 @@ class Sketchfab(rm.Site):
     # The glTF binary Sketchfab makes of every downloadable model is its own
     # mesh of it, which is what 'source: preview' means.
     PREVIEWS = True
+    # Unlike other sites' previews it is not coarser, and it needs the token
+    # like every download.
+    PREVIEW_DESCRIPTION = "the glTF binary %s makes of every downloadable model, which needs a token like any download"
     LOGIN_INSTRUCTIONS = (
         "Searching Sketchfab, and reading a model's details, take no token; every download does, the glTF binary "
         "Sketchfab makes of a model included. The token is the API token of your own Sketchfab account: sign in at "
