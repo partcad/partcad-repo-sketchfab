@@ -24,7 +24,8 @@ and so does the plugin of what it serves: an upload to a model site says
 nothing about whether, or how, it is made to be made - and on Sketchfab it is
 most often made to be looked at.
 
-Requires PartCAD 0.9.3 or newer: the first release whose repository plugins
+Requires PartCAD 0.9.20 or newer, the first release with the toolkit the plugin
+is written with (`plugin_models`). 0.9.3 was the first release whose repository plugins
 may search their own catalog (`searchKinds`), resolve a parametrized name
 themselves (`instanceKinds`), and log in (`pc login`). They are described under
 "Repositories" and "Logging in" in PartCAD's plugin documentation.
@@ -56,7 +57,7 @@ PartCAD reads, Sketchfab has three:
 Sketchfab takes no STEP, BREP, 3MF or OpenSCAD upload, so the rest of the
 formats the other model sites are read in never come up here. Its glTF (an
 archive of a `.gltf` and the files it names) is the same mesh as its glTF
-binary, and is not served; its USDZ is a format PartCAD does not read. An upload
+binary, and is not served; nor is its USDZ, the same model again. An upload
 in any other format - FBX, Blender, PLY, IGES, 3ds Max - is not a part, and
 neither is a GLB upload, which the glTF binary stands for.
 
