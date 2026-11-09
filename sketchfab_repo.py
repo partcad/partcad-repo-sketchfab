@@ -41,9 +41,9 @@ import plugin_models as rm
 #
 # v1: models as parts, Sketchfab's glTF binary of each and the designer's upload
 #     where it is an STL or an OBJ; 'formats' and 'source'; and 'login'.
-# v2: the toolkit is PartCAD's own (plugin_models): IGES, OpenUSD and the native
-#     formats of CAD applications are taken too, and a model's id is spelled in
-#     a file's path the way it is read back.
+# v2: the toolkit is PartCAD's own (plugin_models): its 'formats' takes every
+#     format PartCAD reads, and a model's id is spelled in a file's path the
+#     way it is read back.
 CACHE_VERSION = 2
 
 
@@ -53,11 +53,15 @@ API = "https://api.sketchfab.com/v3"
 # A model's uid: what ends its address, and all its API knows it by.
 _UID = re.compile(r"^[0-9a-f]{32}$")
 
-# The formats PartCAD reads that Sketchfab takes an upload in and that its
-# search tells apart ('file_format'), which is how the plugin learns what a
-# model was uploaded as without downloading it. Sketchfab takes no STEP, BREP,
-# 3MF or OpenSCAD upload; a GLB upload is left to the glTF binary Sketchfab
-# makes of every model, which holds the same triangles.
+# The designer's uploads offered: formats PartCAD reads, that Sketchfab takes an
+# upload in, and that its search tells apart ('file_format'), which is how the
+# plugin learns what a model was uploaded as without downloading it. Sketchfab
+# takes no STEP, BREP, 3MF, OpenSCAD or native CAD upload; a GLB upload is left
+# to the glTF binary Sketchfab makes of every model, which holds the same
+# triangles. IGES and OpenUSD uploads are left out on purpose: each is a search
+# more for every model looked up (two for IGES: the search takes 'igs' and
+# 'iges' apart, and one 'file_format' at a time), for an upload the API's
+# documentation says it does not serve.
 UPLOAD_FORMATS = ("stl", "obj")
 
 # The most models one page of Sketchfab's search holds.

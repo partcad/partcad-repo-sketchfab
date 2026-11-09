@@ -46,7 +46,7 @@ in `sketchfab.com/3d-models/bracket-for-nema-17-d3af66e9f74040508937b1dc81964f26
 
 Any of them may be given together, and must then agree; `source` and the
 plugin's own `formats` are under [Parameters](#parameters). Of the formats
-PartCAD reads, Sketchfab has three:
+PartCAD reads, the plugin serves three:
 
 | Format | Read as PartCAD part type | On Sketchfab |
 | --- | --- | --- |
@@ -54,12 +54,19 @@ PartCAD reads, Sketchfab has three:
 | `stl` | `stl` | The designer's upload, where it was an STL: `file=source.stl`. |
 | `obj` | `obj` | The designer's upload, where it was an OBJ: `file=source.obj`. |
 
-Sketchfab takes no STEP, BREP, 3MF or OpenSCAD upload, so the rest of the
-formats the other model sites are read in never come up here. Its glTF (an
-archive of a `.gltf` and the files it names) is the same mesh as its glTF
-binary, and is not served; nor is its USDZ, the same model again. An upload
-in any other format - FBX, Blender, PLY, IGES, 3ds Max - is not a part, and
-neither is a GLB upload, which the glTF binary stands for.
+Sketchfab takes no STEP, BREP, 3MF or OpenSCAD upload, and none in the
+native formats of CAD applications, so the rest of the formats the other model
+sites are read in never come up here. Its glTF (an archive of a `.gltf` and the
+files it names) is the same mesh as its glTF binary, and is not served; nor is
+its USDZ, the same model again. An upload in a format PartCAD does not read -
+FBX, Blender, PLY, 3ds Max - is not a part, and neither is a GLB upload, which
+the glTF binary stands for.
+
+IGES and OpenUSD uploads, which PartCAD does read, are not offered either, on
+purpose. Finding out whether a model is one is a search more for every model
+looked up (two for IGES, which Sketchfab's search spells both `igs` and
+`iges`), and what it would find is an upload Sketchfab's API documentation says
+it does not serve.
 
 **"Best" is the glTF binary.** Every downloadable model has one, and it is what
 Sketchfab's API documents handing over. The designer's upload is chosen only
