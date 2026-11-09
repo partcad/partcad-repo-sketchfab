@@ -1,15 +1,15 @@
 # Sketchfab for PartCAD
 
 Serves Sketchfab's models as PartCAD parts, published as
-`//pub/universe/sketchfab/models`.
+`//pub/collection/sketchfab/models`.
 
 **Nothing is listed.** A model site's catalog is not something to enumerate,
 so `pc list parts` of this package is empty, as is `pc list packages`. A part is
 asked for by name, and found with `pc search parts`:
 
 ```shell
-pc search parts -P //pub/universe/sketchfab/models -k "nema 17 bracket"
-pc inspect "//pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26"
+pc search parts -P //pub/collection/sketchfab/models -k "nema 17 bracket"
+pc inspect "//pub/collection/sketchfab/models:d3af66e9f74040508937b1dc81964f26"
 ```
 
 **No geometry is vendored.** Every file is fetched from Sketchfab the first
@@ -127,7 +127,7 @@ ten minutes.
 ## Logging in
 
 ```shell
-pc login //pub/universe/sketchfab:sketchfab_repo
+pc login //pub/collection/sketchfab:sketchfab_repo
 ```
 
 checks the token the plugin has by asking Sketchfab whom it belongs to
@@ -150,9 +150,11 @@ PartCAD's extension in it:
 
 Sketchfab registers an OAuth application only when asked, through its help
 center, with the application's name, its grant type and its redirect URI
-(<https://sketchfab.com/developers/oauth>). PartCAD has none, so `client_id` is
-empty and `pc login` asks for the API token; an application of your own works
-the same way, set in your `~/.partcad/config.yaml`.
+(<https://sketchfab.com/developers/oauth>). PartCAD registers none: the
+credentials - your API token, or an OAuth application of your own - are yours
+to provide. Without an application `client_id` is empty and `pc login` asks for
+the API token; with one, set `client_id` and `redirect_uri` in your
+`~/.partcad/config.yaml`.
 
 The token is saved in your `~/.partcad/config.yaml` as your override of the
 repository's `token` (or `oauth_token`) parameter, which is where every later
@@ -171,11 +173,11 @@ export SKETCHFAB_TOKEN=...        # read by the plugin; see the note on Docker b
 ```yaml
 # ~/.partcad/config.yaml
 parameters:
-  "//pub/universe/sketchfab:sketchfab_repo":
+  "//pub/collection/sketchfab:sketchfab_repo":
     token: "..."
 ```
 
-`pc --extra-param "//pub/universe/sketchfab:sketchfab_repo.token=..."` does
+`pc --extra-param "//pub/collection/sketchfab:sketchfab_repo.token=..."` does
 the same for one command. The token is sent to `api.sketchfab.com` as
 `Authorization: Token ...` (an OAuth token as `Authorization: Bearer ...`), and
 only to download a model or to check whom it is: a search and a model's details
@@ -204,7 +206,7 @@ Sketchfab part:
 | `max_faces` | empty | The most triangles a model a search names may have, as Sketchfab counts them in its glTF binary. Empty is no limit; `100000` keeps a search to what PartCAD builds in about a minute. A part asked for by name is served whatever its size. |
 | `token` | empty | The API token of your own Sketchfab account, which every download takes. `SKETCHFAB_TOKEN` gives it too. |
 | `oauth_token` | empty | Instead of `token`: what an OAuth application was granted on your behalf. `pc login` gets it when `client_id` is set. `SKETCHFAB_OAUTH_TOKEN` gives it too. |
-| `client_id` | empty | The OAuth application `pc login` signs in with, by an implicit grant, instead of asking for the API token. Empty: Sketchfab registers applications only on request, and PartCAD has none. Set it, with `redirect_uri`, to an application of your own. |
+| `client_id` | empty | The OAuth application `pc login` signs in with, by an implicit grant, instead of asking for the API token. Empty: Sketchfab registers applications only on request, and PartCAD registers none. Set it, with `redirect_uri`, to an application of your own, in your own configuration. |
 | `redirect_uri` | empty | The redirect URI registered with that application (Sketchfab takes `http://127.0.0.1:<port>/...`). It is never loaded. |
 
 They are yours to set without touching this package - every one of them, the
@@ -215,7 +217,7 @@ credentials included, and the OAuth settings beside them:
 
   ```yaml
   parameters:
-    "//pub/universe/sketchfab:sketchfab_repo":
+    "//pub/collection/sketchfab:sketchfab_repo":
       formats: stl,obj
       max_faces: "100000"
   ```
@@ -228,7 +230,7 @@ credentials included, and the OAuth settings beside them:
   repositories:
     uploads_repo:
       type: enrich
-      source: //pub/universe/sketchfab:sketchfab_repo
+      source: //pub/collection/sketchfab:sketchfab_repo
       with:
         formats: stl,obj
   dependencies:
@@ -245,7 +247,7 @@ enrich of the part:
 parts:
   bracket:
     type: enrich
-    source: //pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26
+    source: //pub/collection/sketchfab/models:d3af66e9f74040508937b1dc81964f26
     with:
       format: stl
 ```
@@ -260,8 +262,8 @@ refreshes what was cached without it.
 An AI agent, or a script, logs in without a browser:
 
 ```shell
-pc login --agent //pub/universe/sketchfab:sketchfab_repo
-pc login --agent --set token=... //pub/universe/sketchfab:sketchfab_repo
+pc login --agent //pub/collection/sketchfab:sketchfab_repo
+pc login --agent --set token=... //pub/collection/sketchfab:sketchfab_repo
 ```
 
 The first prints what a person would do in the browser instead of opening one -
@@ -314,16 +316,21 @@ its API shows:
 
 | Path | Purpose |
 | --- | --- |
-| `partcad.yaml` | `//pub/universe/sketchfab`; the `models` external dependency and the `sketchfab_repo` repository that serves it. |
+| `partcad.yaml` | `//pub/collection/sketchfab`; the `models` external dependency and the `sketchfab_repo` repository that serves it. |
 | `sketchfab_repo.py` | The repository plugin: how Sketchfab is asked. |
-| `remote_models.py` | What every model-site plugin shares, byte for byte: the names, the formats, HTTP and its cache, the keys PartCAD asks. The same file is in every model-site plugin (partcad-repo-thingiverse, -makerworld, -grabcad, -printables, -cults3d and -sketchfab); `remote_models.sha256` is its digest, and a test fails when the two disagree - change it in all of them. |
-| `test_*.py` | The tests. Nothing in them touches the network. |
+| `test_*.py`, `conftest.py` | The tests. Nothing in them touches the network. They need PartCAD installed: the plugin imports its toolkit, `plugin_models`, from PartCAD's wrappers. |
 
 ```shell
 python -m pytest
 ```
 
-When what the plugin answers changes - here or in `remote_models.py` - raise
+What every model-site plugin shares - the names, the formats, HTTP and its
+cache, the keys PartCAD asks - is PartCAD's own toolkit, `plugin_models`, one
+of its wrappers (PartCAD 0.9.20 and later), which the plugin imports wherever
+PartCAD runs it.
+
+When what the plugin answers changes - here, or in the `plugin_models` of a new
+PartCAD - raise
 `CACHE_VERSION` in `sketchfab_repo.py`: PartCAD keys everything it caches of this
 package on it.
 

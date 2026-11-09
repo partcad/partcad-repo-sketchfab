@@ -5,7 +5,7 @@
 #
 """A PartCAD 'basic' repository plugin that serves Sketchfab models as parts.
 
-Published as ``//pub/universe/sketchfab/models``. Nothing is listed: a part is
+Published as ``//pub/collection/sketchfab/models``. Nothing is listed: a part is
 asked for by the model's uid - the 32 hexadecimal digits that end its address,
 sketchfab.com/3d-models/<slug>-<uid> - and is one file of that model.
 
@@ -22,40 +22,30 @@ own (sketchfab.com/settings/password) as SKETCHFAB_TOKEN, or as the repository's
 
 PartCAD runs this script once per key (via runpy) with the key in
 ``request["key"]``; the answer goes in ``output``. What the keys mean, and
-everything else that is the same for every model site, is in remote_models.py.
+everything else that is the same for every model site, is PartCAD's plugin_models.
 """
 
-import importlib.util
 import io
-import os
 import re
-import sys
 import unicodedata
 import urllib.parse
 import zipfile
 
+# PartCAD's toolkit for model-site plugins: one of its wrappers, on the path of
+# every sandbox a plugin runs in, from PartCAD 0.9.20 on.
+import plugin_models as rm
+
 # When this plugin's answers stopped meaning what they meant before. PartCAD
 # keys everything it caches of this package on it, so raise it with any change
-# to what is answered - here or in remote_models.py.
+# to what is answered - here or in PartCAD's plugin_models.
 #
 # v1: models as parts, Sketchfab's glTF binary of each and the designer's upload
 #     where it is an STL or an OBJ; 'formats' and 'source'; and 'login'.
-CACHE_VERSION = 1
+# v2: the toolkit is PartCAD's own (plugin_models): IGES, OpenUSD and the native
+#     formats of CAD applications are taken too, and a model's id is spelled in
+#     a file's path the way it is read back.
+CACHE_VERSION = 2
 
-
-def _shared():
-    """remote_models.py, beside this script, under a name of this plugin's own."""
-    name = "_partcad_sketchfab_remote_models"
-    if name not in sys.modules:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "remote_models.py")
-        spec = importlib.util.spec_from_file_location(name, path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        spec.loader.exec_module(module)
-    return sys.modules[name]
-
-
-rm = _shared()
 
 WEB = "https://sketchfab.com"
 API = "https://api.sketchfab.com/v3"
@@ -192,10 +182,11 @@ class Sketchfab(rm.Site):
 
     def __init__(self, request=None):
         super().__init__(request)
-        # The OAuth application 'pc login' signs in with, when there is one:
-        # its client id and the callback it registered. Not credentials - an
-        # implicit grant takes no client secret - so they are the package's
-        # parameters, and anybody's to set to an application of their own.
+        # The user's own OAuth application, when they have one: its client id
+        # and the callback it registered. Not secrets - an implicit grant takes
+        # no client secret - but the user's, like the token: PartCAD registers
+        # no application with Sketchfab, so they are set in the user's own
+        # configuration, never in a package.
         parameters = self.request.get("parameters") or {}
         self.client_id = str(parameters.get("client_id") or "").strip()
         self.redirect_uri = str(parameters.get("redirect_uri") or "").strip()
