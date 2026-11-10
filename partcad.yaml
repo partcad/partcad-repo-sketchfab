@@ -137,6 +137,7 @@ repositories:
           takes it back with '--set token=...'. The SKETCHFAB_TOKEN
           environment variable gives it too, where the plugin's sandbox sees
           the environment (a container does not). Never set it in a package.
+        shared: true
       oauth_token:
         type: string
         default: ""
@@ -146,6 +147,7 @@ repositories:
           gets it when 'client_id' and 'redirect_uri' name an application; it
           lasts a month. SKETCHFAB_OAUTH_TOKEN gives it too. Never set it in a
           package.
+        shared: true
       # An OAuth application of your own, for 'pc login' to sign in with. Not
       # secrets - an implicit grant takes no client secret - but yours, like
       # the token, and set where only you see it. Empty here, and meant to
@@ -162,6 +164,7 @@ repositories:
           asked through its help center, with a redirect URI, and an implicit
           grant needs no client secret; set this and 'redirect_uri' in your
           ~/.partcad/config.yaml as above to sign in through one of your own.
+        shared: true
       redirect_uri:
         type: string
         default: ""
@@ -170,3 +173,4 @@ repositories:
           takes http://127.0.0.1:<port>/...). It is never loaded: the
           extension reads the token off the address Sketchfab sends the
           browser to.
+        shared: true

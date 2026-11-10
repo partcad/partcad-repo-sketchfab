@@ -185,6 +185,12 @@ parameters:
     token: "..."
 ```
 
+`token`, `oauth_token`, `client_id`, `redirect_uri` are the package's, not only the plugin's: each says `shared: true`. With
+PartCAD 0.10.4 or later, `pc login` keeps them under the package,
+`"//pub/collection/sketchfab":`, where an entry gives them to every object of the
+package; an entry for the plugin, as above, still works, and wins over the
+package's. An older PartCAD reads the plugin's entry only.
+
 `pc --extra-param "//pub/collection/sketchfab:sketchfab_repo.token=..."` does
 the same for one command. The token is sent to `api.sketchfab.com` as
 `Authorization: Token ...` (an OAuth token as `Authorization: Bearer ...`), and
