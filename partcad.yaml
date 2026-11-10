@@ -1,11 +1,11 @@
 # PartCAD package: Sketchfab models as parts, served by a repository plugin.
 #
-# Published as //pub/universe/sketchfab/models: this package is
-# //pub/universe/sketchfab, and its one external dependency 'models' is served by
+# Published as //pub/collection/sketchfab/models: this package is
+# //pub/collection/sketchfab, and its one external dependency 'models' is served by
 # the sketchfab_repo plugin. Nothing is listed - a model site's catalog is not
 # something to enumerate - so a part is asked for by name, and found with
 # 'pc search parts' (see the README).
-name: //pub/universe/sketchfab
+name: //pub/collection/sketchfab
 
 desc: |
   Models on Sketchfab (https://sketchfab.com) as PartCAD parts, a part per file
@@ -16,11 +16,10 @@ desc: |
   the user's own Sketchfab account, when it is first built.
 url: https://sketchfab.com/
 
-# The first PartCAD whose repository plugins may search their own catalog
-# ('searchKinds') and resolve a parametrized name themselves ('instanceKinds'),
-# which is what lets a parameter choose another file of a model, and that has
-# 'pc login'.
-partcad: ">=0.9.3"
+# The first PartCAD that has the toolkit this plugin is written with
+# (plugin_models), and hands a repository plugin the key it is asked for
+# taken apart ('query').
+partcad: ">=0.9.20"
 
 # An upload to a model site says nothing about whether, or how, it is made to
 # be manufactured - and on Sketchfab it is most often made to be looked at. The
@@ -31,10 +30,10 @@ docs:
   name: Sketchfab for PartCAD
   usage: |
     ```shell
-    pc search parts -P //pub/universe/sketchfab/models -k "nema 17 bracket"
-    pc login //pub/universe/sketchfab:sketchfab_repo
-    pc inspect //pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26
-    pc inspect "//pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26;format=stl"
+    pc search parts -P //pub/collection/sketchfab/models -k "nema 17 bracket"
+    pc login //pub/collection/sketchfab:sketchfab_repo
+    pc inspect //pub/collection/sketchfab/models:d3af66e9f74040508937b1dc81964f26
+    pc inspect "//pub/collection/sketchfab/models:d3af66e9f74040508937b1dc81964f26;format=stl"
     ```
 
 dependencies:
@@ -55,7 +54,7 @@ repositories:
     #   plugin's name - which is also where 'pc login' keeps the token:
     #
     #     parameters:
-    #       //pub/universe/sketchfab:sketchfab_repo:
+    #       //pub/collection/sketchfab:sketchfab_repo:
     #         formats: stl,obj
     #
     # - or in a package of your own, as an enrich of the plugin and a package
@@ -66,7 +65,7 @@ repositories:
     #     repositories:
     #       uploads_repo:
     #         type: enrich
-    #         source: //pub/universe/sketchfab:sketchfab_repo
+    #         source: //pub/collection/sketchfab:sketchfab_repo
     #         with:
     #           formats: stl,obj
     #     dependencies:
@@ -85,7 +84,7 @@ repositories:
     #     parts:
     #       bracket:
     #         type: enrich
-    #         source: //pub/universe/sketchfab/models:d3af66e9f74040508937b1dc81964f26
+    #         source: //pub/collection/sketchfab/models:d3af66e9f74040508937b1dc81964f26
     #         with:
     #           format: stl
     parameters:
@@ -132,7 +131,7 @@ repositories:
           takes (searching does not): https://sketchfab.com/settings/password
           shows it, signed in. It is sent as 'Authorization: Token' to
           api.sketchfab.com, and to nothing else. 'pc login
-          //pub/universe/sketchfab:sketchfab_repo' opens that page and takes
+          //pub/collection/sketchfab:sketchfab_repo' opens that page and takes
           it, and keeps it in your ~/.partcad/config.yaml, under 'parameters'
           as above; 'pc login --agent' says where to find it by hand, and
           takes it back with '--set token=...'. The SKETCHFAB_TOKEN
@@ -147,12 +146,12 @@ repositories:
           gets it when 'client_id' and 'redirect_uri' name an application; it
           lasts a month. SKETCHFAB_OAUTH_TOKEN gives it too. Never set it in a
           package.
-      # The OAuth application 'pc login' signs in with. Not secrets - an
-      # implicit grant takes no client secret - and the same for every user,
-      # so they belong here, and are yours to override with an application of
-      # your own. Empty: Sketchfab registers an application only by being
-      # asked (https://sketchfab.com/developers/oauth), and PartCAD has none,
-      # so 'pc login' asks for the API token instead.
+      # An OAuth application of your own, for 'pc login' to sign in with. Not
+      # secrets - an implicit grant takes no client secret - but yours, like
+      # the token, and set where only you see it. Empty here, and meant to
+      # stay so: Sketchfab registers an application only by being asked
+      # (https://sketchfab.com/developers/oauth), and PartCAD registers none,
+      # so without one 'pc login' asks for the API token instead.
       client_id:
         type: string
         default: ""
